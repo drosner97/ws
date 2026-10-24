@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0E12">
+<title>Pyramid Shuttle — 600 yd / 9:00</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B0E12;
+  --ink-2:#141922;
+  --chalk:#F2F4F1;
+  --chalk-dim:#8D97A3;
+  --line:rgba(242,244,241,.14);
+  --steel:#7FA6C4;      /* get ready */
+  --go:#FF4326;         /* go */
+  --display:"Barlow Condensed","Helvetica Neue Condensed",Impact,system-ui,sans-serif;
+  --util:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:var(--ink);color:var(--chalk);
+  font-family:var(--util);
+  display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) 18px calc(18px + env(safe-area-inset-bottom));
+  overflow-x:hidden;
+}
+body.flash{background:var(--go)}
+
+/* ── header ─────────────────────────────── */
+header{padding:18px 0 6px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-dim)}
+.eyebrow b{color:var(--chalk);font-weight:500}
+.elapsed{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1}
+.elapsed span{font-family:var(--util);font-size:10px;letter-spacing:.22em;color:var(--chalk-dim);display:block;margin-bottom:3px}
+
+/* ── main readout ───────────────────────── */
+main{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:0;padding:8px 0}
+.status{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-dim);min-height:16px}
+.repline{
+  font-family:var(--display);font-weight:800;text-transform:uppercase;
+  font-size:clamp(30px,10vw,58px);line-height:.95;letter-spacing:-.01em;
+}
+.repline em{font-style:normal;color:var(--steel)}
+.count{
+  font-family:var(--display);font-weight:800;font-variant-numeric:tabular-nums;
+  font-size:clamp(96px,34vw,200px);line-height:.8;letter-spacing:-.04em;
+  margin:6px 0 2px;transition:color .12s linear;
+}
+.count.hot{color:var(--go)}
+.count.now{color:var(--go)}
+.sub{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk-dim)}
+body.flash .count,body.flash .repline,body.flash .status,body.flash .sub,
+body.flash .elapsed,body.flash .eyebrow,body.flash .eyebrow b{color:var(--ink)}
+body.flash .count.hot,body.flash .count.now,body.flash .repline em{color:var(--ink)}
+
+/* ── signature: the pyramid timeline ────── */
+.track{position:relative;height:110px;margin:14px 0 8px;border-bottom:1px solid var(--line)}
+.bar{position:absolute;bottom:0;background:var(--ink-2);border:1px solid var(--line);border-bottom:none;min-width:6px;transition:background .2s}
+.bar.done{background:rgba(255,67,38,.28);border-color:rgba(255,67,38,.5)}
+.bar.live{background:var(--go);border-color:var(--go)}
+.bar i{
+  position:absolute;top:-15px;left:50%;transform:translateX(-50%);
+  font-style:normal;font-size:9px;letter-spacing:.08em;color:var(--chalk-dim);
+}
+.bar.live i,.bar.done i{color:var(--chalk)}
+.head{position:absolute;top:-6px;bottom:-1px;width:2px;background:var(--chalk);left:0}
+.head::before{content:"";position:absolute;top:-4px;left:-3px;width:8px;height:8px;background:var(--chalk);border-radius:50%}
+.trackfoot{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.18em;color:var(--chalk-dim);text-transform:uppercase}
+
+/* ── controls ───────────────────────────── */
+.controls{display:flex;gap:10px;padding-top:14px}
+button{
+  flex:1;font-family:var(--display);font-weight:800;text-transform:uppercase;
+  font-size:22px;letter-spacing:.06em;padding:16px 10px;border-radius:2px;cursor:pointer;
+  background:var(--chalk);color:var(--ink);border:1px solid var(--chalk);
+}
+button.ghost{background:transparent;color:var(--chalk)}
+button:disabled{opacity:.3;cursor:default}
+button:focus-visible{outline:3px solid var(--steel);outline-offset:3px}
+
+/* ── schedule ───────────────────────────── */
+details{margin-top:14px;border-top:1px solid var(--line)}
+summary{padding:14px 0;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-dim);cursor:pointer}
+summary:focus-visible{outline:2px solid var(--steel);outline-offset:2px}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+td{padding:7px 0;border-top:1px solid var(--line);color:var(--chalk-dim)}
+td:first-child{color:var(--chalk);width:3.5em}
+td:last-child{text-align:right;color:var(--chalk);font-family:var(--display);font-size:17px;font-weight:600}
+tr.done td{opacity:.4}
+tr.live td{color:var(--go)}
+.note{font-size:11px;line-height:1.6;color:var(--chalk-dim);padding:12px 0 0}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  body.flash{background:var(--ink)}
+  body.flash .count,body.flash .repline,body.flash .status,body.flash .sub,
+  body.flash .elapsed,body.flash .eyebrow,body.flash .eyebrow b{color:var(--chalk)}
+  body.flash .count.now{color:var(--go)}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Pyramid shuttle · <b>Sam</b> · 600 yd · 9:00</div>
+  <div class="elapsed"><span>Elapsed</span><b id="elapsed">0:00</b></div>
+</header>
+
+<main>
+  <div class="status" id="status">Ready</div>
+  <div class="repline" id="repline">10 reps · 600 yards</div>
+  <div class="count" id="count">9:00</div>
+  <div class="sub" id="sub">Press start for a 5-second lead-in</div>
+
+  <div class="track" id="track" aria-hidden="true">
+    <div class="head" id="head"></div>
+  </div>
+  <div class="trackfoot"><span>0:00</span><span>Up · 20 40 60 80 100</span><span>Down · 100 80 60 40 20</span><span>9:00</span></div>
+</main>
+
+<div class="controls">
+  <button id="go">Start</button>
+  <button id="reset" class="ghost">Reset</button>
+</div>
+
+<details>
+  <summary>Full schedule</summary>
+  <table id="sched"></table>
+  <p class="note">Five blips at one-second intervals, then a long tone on the rep start. Rest between reps scales with the distance she just covered. Keep the screen awake — the tones stop if the phone sleeps.</p>
+</details>
+
+<script>
+(function(){
+  "use strict";
+
+  const TOTAL = 540;                 // 9:00
+  const PREROLL = 5;                 // lead-in before 0:00
+  const PACE = 0.18;                 // s/yd, used only for the bar fill
+  const DIST   = [20,40,60,80,100,100,80,60,40,20];
+  const STARTS = [0,18,55,111,185,277,370,444,499,536];
+
+  const $ = id => document.getElementById(id);
+  const el = {status:$("status"), repline:$("repline"), count:$("count"), sub:$("sub"),
+              elapsed:$("elapsed"), head:$("head"), track:$("track"), go:$("go"),
+              reset:$("reset"), sched:$("sched")};
+
+  const mmss = s => {
+    s = Math.max(0, s);
+    const m = Math.floor(s/60), r = Math.floor(s%60);
+    return m + ":" + String(r).padStart(2,"0");
+  };
+
+  /* ── build the pyramid timeline ──────────────────────────── */
+  const bars = STARTS.map((st,i)=>{
+    const end = (i < STARTS.length-1) ? STARTS[i+1] : TOTAL;
+    const b = document.createElement("div");
+    b.className = "bar";
+    b.style.left   = (st/TOTAL*100)+"%";
+    b.style.width  = ((end-st)/TOTAL*100)+"%";
+    b.style.height = (DIST[i]/100*100)+"%";
+    b.innerHTML = "<i>"+DIST[i]+"</i>";
+    el.track.appendChild(b);
+    return b;
+  });
+
+  /* ── build the schedule table ────────────────────────────── */
+  const rows = STARTS.map((st,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>Rep "+(i+1)+"</td><td>"+DIST[i]+" yd</td><td>"+mmss(st)+"</td>";
+    el.sched.appendChild(tr);
+    return tr;
+  });
+
+  /* ── audio ───────────────────────────────────────────────── */
+  let ctx = null, scheduled = [];
+
+  function tone(at, freq, dur, peak, type){
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.setValueAtTime(freq, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(peak, at + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(at); osc.stop(at + dur + 0.05);
+    scheduled.push(osc);
+  }
+  const blip = at => tone(at, 660, 0.10, 0.30, "sine");                       // T-5 … T-1
+  const bell = at => { tone(at, 1320, 0.50, 0.45, "triangle");                 // GO
+                       tone(at,  880, 0.50, 0.22, "sine"); };
+  const done = at => [0,0.16,0.32].forEach(o => tone(at+o, 880, 0.14, 0.35, "square"));
+
+  function scheduleFrom(base, fromT){
+    STARTS.forEach(st=>{
+      for(let k=5;k>=1;k--){ const t = st-k; if(t >= fromT) blip(base+t); }
+      if(st >= fromT) bell(base+st);
+    });
+    if(TOTAL >= fromT) done(base+TOTAL);
+  }
+  function killAudio(){ scheduled.forEach(o=>{try{o.stop(0);}catch(e){}}); scheduled = []; }
+
+  /* ── state ───────────────────────────────────────────────── */
+  let running = false, base = 0, pausedAt = -PREROLL, raf = 0, lastBell = -1;
+
+  function now(){ return running ? ctx.currentTime - base : pausedAt; }
+
+  function start(){
+    if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state === "suspended") ctx.resume();
+    base = ctx.currentTime - pausedAt;
+    scheduleFrom(base, pausedAt);
+    running = true;
+    el.go.textContent = "Pause";
+    loop();
+  }
+  function pause(){
+    pausedAt = now(); running = false;
+    killAudio(); cancelAnimationFrame(raf);
+    el.go.textContent = "Resume";
+    el.status.textContent = "Paused";
+  }
+  function reset(){
+    running = false; pausedAt = -PREROLL; lastBell = -1;
+    killAudio(); cancelAnimationFrame(raf);
+    document.body.classList.remove("flash");
+    el.go.textContent = "Start";
+    el.status.textContent = "Ready";
+    el.repline.textContent = "10 reps · 600 yards";
+    el.count.textContent = "9:00"; el.count.className = "count";
+    el.sub.textContent = "Press start for a 5-second lead-in";
+    el.elapsed.textContent = "0:00";
+    el.head.style.left = "0%";
+    bars.forEach(b=>b.className="bar");
+    rows.forEach(r=>r.className="");
+  }
+
+  /* ── frame loop ──────────────────────────────────────────── */
+  function loop(){
+    const t = now();
+
+    el.elapsed.textContent = mmss(Math.max(0,t));
+    el.head.style.left = Math.min(100, Math.max(0, t/TOTAL*100)) + "%";
+
+    // which rep is next / current
+    let next = STARTS.findIndex(s => s > t + 0.001);
+    const cur = (next === -1) ? STARTS.length-1 : next-1;
+
+    // full-bleed flash + tone marker on each start
+    if(cur >= 0 && cur !== lastBell && t - STARTS[cur] < 1){
+      lastBell = cur;
+      document.body.classList.add("flash");
+      setTimeout(()=>document.body.classList.remove("flash"), 420);
+    }
+
+    if(t >= TOTAL){
+      el.status.textContent = "Session complete";
+      el.repline.textContent = "600 yards · 9:00";
+      el.count.textContent = "0:00"; el.count.className = "count";
+      el.sub.textContent = "Nice work";
+      bars.forEach(b=>b.className="bar done");
+      rows.forEach(r=>r.className="done");
+      running = false; el.go.textContent = "Start"; pausedAt = -PREROLL;
+      return;
+    }
+
+    if(next === -1) next = STARTS.length; // shouldn't happen before TOTAL
+
+    if(next < STARTS.length){
+      const gap = STARTS[next] - t;
+      el.status.textContent = "Next up";
+      el.repline.innerHTML = "Rep " + (next+1) + " <em>·</em> " + DIST[next] + " yd";
+      el.count.textContent = gap <= 9.5 ? String(Math.ceil(gap)) : mmss(gap);
+      el.count.className = "count" + (gap <= 5.5 ? " hot" : "");
+      el.sub.textContent = "Starts at " + mmss(STARTS[next]) + " · on the long tone";
+    }
+
+    // just-started rep takes over the readout briefly
+    if(cur >= 0 && t - STARTS[cur] < 2.2){
+      el.status.textContent = "Go";
+      el.repline.innerHTML = "Rep " + (cur+1) + " <em>·</em> " + DIST[cur] + " yd";
+      el.count.textContent = "GO";
+      el.count.className = "count now";
+      el.sub.textContent = Math.round(DIST[cur]/20) + " × 20 yd shuttle";
+    }
+
+    // bar + row states
+    bars.forEach((b,i)=>{
+      const runEnd = STARTS[i] + DIST[i]*PACE;
+      b.className = "bar" + (t >= STARTS[i] && t < runEnd ? " live" : (t >= runEnd ? " done" : ""));
+    });
+    rows.forEach((r,i)=>{
+      r.className = (i === cur && t - STARTS[i] < 2.2) ? "live" : (t >= STARTS[i] ? "done" : "");
+    });
+
+    raf = requestAnimationFrame(loop);
+  }
+
+  el.go.addEventListener("click", ()=> running ? pause() : start());
+  el.reset.addEventListener("click", reset);
+  document.addEventListener("keydown", e=>{
+    if(e.code === "Space"){ e.preventDefault(); running ? pause() : start(); }
+    if(e.key.toLowerCase() === "r") reset();
+  });
+
+  reset();
+})();
+</script>
+</body>
+</html>
